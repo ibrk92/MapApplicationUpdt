@@ -28,7 +28,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.ibrahimkiceci.mapapplication.databinding.ActivityMapsBinding;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+
+    // when users click longly on the map, i put the red mark on the clicked area. Thus, to use this features i ll use and implement OnMapLongClickListener Interface
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
@@ -57,6 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMapLongClickListener(this); // i need a click listener to click longly on the map.
 
         // to get a location or working for location we need two classes; one of them is LocationManager, the other one is Location Listener.
         //casting
@@ -71,6 +74,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 // It coulod be necessary to call at least one time here
                 // You need to create algorithm here. For example, shared preferences
+                // It looks like compulsory to create algorthm because when user close the phone, the last location is not coming its open again!
+
+
+
 
 
             }
@@ -185,5 +192,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    @Override
+    public void onMapLongClick(@NonNull LatLng latLng) {
 
+        // When users click longly, this method will be called;
+
+        // to clear old red marks;
+        //mMap.clear();
+
+        mMap.addMarker(new MarkerOptions().position(latLng)); // adding red mark when clicked longly;
+
+
+
+    }
 }
