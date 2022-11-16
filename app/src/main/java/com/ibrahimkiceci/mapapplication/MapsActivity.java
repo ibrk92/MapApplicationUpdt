@@ -4,13 +4,16 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultCaller;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.room.Room;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -27,6 +30,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.ibrahimkiceci.mapapplication.databinding.ActivityMapsBinding;
+import com.ibrahimkiceci.mapapplication.model.Place;
+import com.ibrahimkiceci.mapapplication.roomdb.PlaceDAO;
+import com.ibrahimkiceci.mapapplication.roomdb.PlaceDatabase;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
@@ -37,6 +47,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ActivityResultLauncher<String> permissionLauncher; // it is for permission
     LocationManager locationManager;
     LocationListener locationListener;
+    PlaceDatabase placeDatabase;
+    PlaceDAO placeDAO;
+    Double selectedLongitude;
+    Double selectedLatitude;
+    private CompositeDisposable compositeDisposable =  new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +68,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //calling registerPermissionLauncher
 
         registerPermissionLauncher();
+
+        // to create an instance of the database;
+        //source : https://developer.android.com/training/data-storage/room#java
+
+        placeDatabase = Room.databaseBuilder(getApplicationContext(),PlaceDatabase.class,"Place")
+                //.allowMainThreadQueries() // we can use allowThreadQueries but it is not advised by Android Google to use this code. Because app can be stopped working, for this reason it is recommened to use RX Java
+                .build();
+        // using the methods from the DAO instance to interact with the database:
+        placeDAO = placeDatabase.placeDao();
+        selectedLatitude = 0.0;
+        selectedLongitude = 0.0;
+
     }
 
 
@@ -60,7 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMapLongClickListener(this); // i need a click listener to click longly on the map.
-
+        binding.saveButton.setEnabled(false); // after user click i make it clickable
         // to get a location or working for location we need two classes; one of them is LocationManager, the other one is Location Listener.
         //casting
         // Location Manager is to get the location period from the user, locationlistener is interface so to get location info when user has moved.
@@ -202,7 +229,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.addMarker(new MarkerOptions().position(latLng)); // adding red mark when clicked longly;
 
+        // when user click the map, i am getting the latitude and longitude info
+        selectedLatitude = latLng.latitude;
+        selectedLongitude = latLng.longitude;
+
+        // making save button clickable;
+        binding.saveButton.setEnabled(true);
 
 
+    }
+
+    // creating function for onclick methods
+
+    public void save(View view){
+
+       Place place = new Place(binding.placeNameText.getText().toString(),selectedLatitude,selectedLongitude);
+       //placeDAO.insert(place).subscribeOn(Schedulers.io()).subscribe(); // it is recommended to use disposable instead of this.
+
+        //Using Disposable from rxjava
+        // source : https://cupsofcode.com/post/when_how_use_rxjava_disposable_serialdisposable_compositedisposable/
+        compositeDisposable.add(placeDAO.insert(place)
+                .subscribeOn(Schedulers.io()) // make placeDao in io thread
+                .observeOn(AndroidSchedulers.mainThread()) // observe on mainThread
+                .subscribe(MapsActivity.this::responseSave) // it can be write what will you do after save. so it is possible to write method.
+                        //start responseSave
+                //Subscribeon --> which thread is used
+                //Observeon --> Where it will be used or observed
+
+        );
+
+    }
+
+    public void responseSave(){
+
+        Intent intent = new Intent(MapsActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // close the activities
+        startActivity(intent);
+    }
+
+
+    public void delete(View view){
+        /*
+
+        compositeDisposable.add(placeDAO.delete()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(MapsActivity.this::responseSave)
+
+        );
+        */
+
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        // after destroy the app, due to compositeDisposable
+
+        super.onDestroy();
+        compositeDisposable.clear(); // all functions is gone, so it is not stored anymore
     }
 }
