@@ -68,6 +68,6 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.PlaceHolder> {
         }
     }
 
-
+//Map adapter
 
 }

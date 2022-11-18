@@ -290,3 +290,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         compositeDisposable.clear(); // all functions is gone, so it is not stored anymore
     }
 }
+
+//maps
