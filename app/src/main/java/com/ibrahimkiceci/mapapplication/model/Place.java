@@ -5,9 +5,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity
 // for room db i create a class to get info what i save !
-public class Place {
+public class Place implements Serializable {
     //In android room documentary, it shows that we should create like that !!
     @PrimaryKey(autoGenerate = true)
     public int id;

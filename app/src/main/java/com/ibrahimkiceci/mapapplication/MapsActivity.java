@@ -52,6 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Double selectedLongitude;
     Double selectedLatitude;
     private CompositeDisposable compositeDisposable =  new CompositeDisposable();
+    Place selectedPlace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         selectedLatitude = 0.0;
         selectedLongitude = 0.0;
 
+        binding.saveButton.setEnabled(false); // after user click i make it clickable
+
     }
 
 
@@ -87,82 +90,119 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMapLongClickListener(this); // i need a click listener to click longly on the map.
-        binding.saveButton.setEnabled(false); // after user click i make it clickable
+        //getting the locationInfo. Because it is showed, it is new location or saved location(old location)
+
+        Intent intent =  getIntent();
+        String locationInfo = intent.getStringExtra("locationInfo");
+        // remember that our value is new_data and old_data
+        if(locationInfo.equals("new_data")) {
+
+            // if it is shown new place;
+            binding.saveButton.setVisibility(View.VISIBLE);
+            // if user clicked the new place(add place menu), it is not necessary to show delete buttom
+            binding.deleteButton.setVisibility(View.GONE);
+            // There is main difference View.Gone and View.Visible
+            // When it is written as a View.Gone, delete button is gone and it is replaced the the other view instead of it.
+
+            //casting
+            // Location Manager is to get the location period from the user, locationlistener is interface so to get location info when user has moved.
+            locationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location location) {
+                    // It shows what will you do when location has been changed
+                    //LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,15));
+
+                    // It coulod be necessary to call at least one time here
+                    // You need to create algorithm here. For example, shared preferences
+                    // It looks like compulsory to create algorthm because when user close the phone, the last location is not coming its open again!
+
+
+
+
+
+                }
+
+
+            };
+
+            //GETTING LOCATION PERMISSION FROM USER
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                // If permission is not granted so we need to request permission
+
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
+                    // This Rationale  is created by android. For instance, if user do not give the permission at first, we can show a snackbar message to open the app
+
+                    Snackbar.make(binding.getRoot(), "Permission is compulsory for using maps", Snackbar.LENGTH_INDEFINITE).setAction("Allow Permission", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+
+
+                            // when permission is not allowed by users and then user decided to allow the permission
+                            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+
+
+
+                        }
+                    }).show();
+
+                }else {
+
+                    // When the first time app starts;
+
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+
+                }
+
+            }else{
+                // if permission is given before so when app is closed after the permission and open again, here is executes;
+
+                // Every milseconds we are getting th location info from user,
+
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
+
+                // Getting last known location from user;
+
+                Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (lastLocation != null){
+
+                    LatLng lastUserLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation, 15));
+
+                }
+
+                mMap.setMyLocationEnabled(true); // making visible the blue pointer
+
+
+
+
+
+            }
+
+
         // to get a location or working for location we need two classes; one of them is LocationManager, the other one is Location Listener.
-        //casting
-        // Location Manager is to get the location period from the user, locationlistener is interface so to get location info when user has moved.
-        locationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(@NonNull Location location) {
-                // It shows what will you do when location has been changed
-                //LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,15));
+        } else{
 
-                // It coulod be necessary to call at least one time here
-                // You need to create algorithm here. For example, shared preferences
-                // It looks like compulsory to create algorthm because when user close the phone, the last location is not coming its open again!
-
-
-
-
-
-            }
-
-
-        };
-
-        //GETTING LOCATION PERMISSION FROM USER
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            // If permission is not granted so we need to request permission
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
-                // This Rationale  is created by android. For instance, if user do not give the permission at first, we can show a snackbar message to open the app
-
-                Snackbar.make(binding.getRoot(), "Permission is compulsory for using maps", Snackbar.LENGTH_INDEFINITE).setAction("Allow Permission", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-
-
-                        // when permission is not allowed by users and then user decided to allow the permission
-                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-
-
-
-                    }
-                }).show();
-
-            }else {
-
-                // When the first time app starts;
-
-                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-
-            }
-
-        }else{
-            // if permission is given before so when app is closed after the permission and open again, here is executes;
-
-            // Every milseconds we are getting th location info from user,
-
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
-
-            // Getting last known location from user;
-
-            Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (lastLocation != null){
-
-                LatLng lastUserLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation, 15));
-
-            }
-
-            mMap.setMyLocationEnabled(true); // making visible the blue pointer
+            // in here, it shows saved location places when it is clicked;
+            mMap.clear();
+            selectedPlace = (Place) intent.getSerializableExtra("place");
+            // getting selectedPlace's latitude and langitude;
+            LatLng position = new LatLng(selectedPlace.latitude, selectedPlace.longitude);
+            //showing on the map
+            mMap.addMarker(new MarkerOptions().position(position).title(selectedPlace.name));
+            // move the camere selected place;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+            binding.placeNameText.setText(selectedPlace.name);
+            binding.saveButton.setVisibility(View.GONE);
+            binding.deleteButton.setVisibility(View.VISIBLE);
 
         }
+
+
 
 
 
@@ -269,15 +309,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     public void delete(View view){
-        /*
 
-        compositeDisposable.add(placeDAO.delete()
+
+        compositeDisposable.add(placeDAO.delete(selectedPlace)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(MapsActivity.this::responseSave)
 
         );
-        */
+
 
 
     }

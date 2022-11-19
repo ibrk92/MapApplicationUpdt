@@ -45,6 +45,9 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.PlaceHolder> {
             public void onClick(View view) {
 
                 Intent intent =  new Intent(holder.itemView.getContext(), MapsActivity.class);
+                //i will send a putextra. Because we need to get that it is clicked to create new place or saved place. It provides to distinguish these;
+                intent.putExtra("locationInfo", "old_data");
+                intent.putExtra("place",placeList.get(position));
                 holder.itemView.getContext().startActivity(intent);
 
 

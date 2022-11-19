@@ -76,10 +76,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.add_place){
-
             //intent
             // when user click the add new place, it shows the map!
             Intent intent =  new Intent(MainActivity.this,MapsActivity.class);
+            // i use intent put extra to understand it is clicked the menu item or old item.
+            // I also use put extra for saved location
+            //in here we understand that the user will create a new location(clicked add location)
+            intent.putExtra("locationInfo", "new_data");
             startActivity(intent);
 
         }
