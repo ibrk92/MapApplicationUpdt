@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">MapApplication</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="underlined_text"><u>You already have an account?</u></string>
+    <string name="login_underline"><u>You don\'t have an account ? Go to Register Page</u></string>
+
 </resources>

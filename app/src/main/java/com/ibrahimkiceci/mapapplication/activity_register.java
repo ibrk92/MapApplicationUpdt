@@ -1,73 +1,74 @@
 package com.ibrahimkiceci.mapapplication;
 
+import androidx.annotation.IntegerRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.room.Room;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.material.shape.ShapePath;
+import com.ibrahimkiceci.mapapplication.adapter.MapAdapter;
 import com.ibrahimkiceci.mapapplication.model.Place;
 import com.ibrahimkiceci.mapapplication.roomdb.PlaceDAO;
 import com.ibrahimkiceci.mapapplication.roomdb.PlaceDatabase;
 
+import java.util.List;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class activity_register extends AppCompatActivity {
 
-    EditText mailText;
-    EditText passwordText;
+    EditText editText1;
+    EditText editText2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register);
 
-        mailText = findViewById(R.id.mailTextSignUp);
-        passwordText = findViewById(R.id.passTextSignUp);
+        editText1 = findViewById(R.id.mailTextSignUp);
+        editText2 = findViewById(R.id.passTextSignUp);
+
+
     }
 
-    public void register(View view){
 
-        //Creating User Place
-
-        Place place = new Place("",0.0,0.0);
-        place.setMailId(mailText.getText().toString());
-        place.setPassword(passwordText.getText().toString());
-
-        if (validateInput(place)){
-
-            PlaceDatabase placeDatabase = PlaceDatabase.getPlaceDatabase(getApplicationContext());
-            PlaceDAO placeDAO = placeDatabase.placeDao();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    placeDAO.registerUser(place);
-                    Toast.makeText(getApplicationContext(), "User Registered", Toast.LENGTH_LONG).show();
-
-                }
-            }).start();
+    public void register(View view) {
 
 
-
+        if (editText1.getText().toString().isEmpty() || editText2.getText().toString().isEmpty()){
+            Toast.makeText(getApplicationContext(), "Please fill all fields to register the app", Toast.LENGTH_SHORT).show();
 
         }else{
-            Toast.makeText(getApplicationContext(), "Email and Passsword can not be empty !", Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent(activity_register.this, MainActivity.class);
+            startActivity(intent);
+
+            Toast.makeText(getApplicationContext(), "Welcome !", Toast.LENGTH_SHORT).show();
 
         }
+
+        
+    }
+
+    public void textClick(View view){
+
+        Intent intent = new Intent(activity_register.this, activity_login.class);
+        startActivity(intent);
 
 
     }
 
-    private Boolean validateInput(Place place){
+    //
 
 
-        if (place.getMailId().isEmpty() || place.getPassword().isEmpty()){
 
-            return false;
-
-        }
-
-        return true;
-
-    }
 
 }
