@@ -20,6 +20,7 @@ public class Place implements Serializable {
     @ColumnInfo(name = "longitude")
     public Double longitude;
 
+
     // creating constructor
     public Place(String name, Double latitude, Double longitude){
         // we do not need to write id in constructor because it will be created auto !

@@ -119,9 +119,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // It looks like compulsory to create algorthm because when user close the phone, the last location is not coming its open again!
 
 
-
-
-
                 }
 
 
@@ -143,8 +140,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             // when permission is not allowed by users and then user decided to allow the permission
                             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-
-
 
                         }
                     }).show();

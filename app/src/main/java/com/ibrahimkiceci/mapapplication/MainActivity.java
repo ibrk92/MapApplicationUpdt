@@ -85,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("locationInfo", "new_data");
             startActivity(intent);
 
+        }else if(item.getItemId() == R.id.log_out){
+            MainActivity.this.finish();
+
         }
 
         // what is happening when user click the menu item
